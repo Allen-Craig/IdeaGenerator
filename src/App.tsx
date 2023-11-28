@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-type TodoData = {
+type ActivityData = {
   activity: string;
   accessibility: number;
   type: string;
@@ -10,38 +10,57 @@ type TodoData = {
   key: string;
 };
 
-function App() {
-  const [count, setCount] = useState(1);
-  const [todoData, setTodoData] = useState<TodoData | null>(null);
-  useEffect(() => {
-    fetch("http://www.boredapi.com/api/activity/")
+type ErrorData = {
+  error: string;
+};
+
+type Response = ActivityData | ErrorData;
+
+const App = () => {
+  const [numOfPeople, setNumOfPeople] = useState(1);
+  const [response, setResponse] = useState<Response | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const getActivityData = () => {
+    setIsLoading(true);
+    fetch(`http://www.boredapi.com/api/activity?participants=${numOfPeople}`)
       .then((response) => response.json())
-      .then((json) => setTodoData(json))
+      .then((json) => {
+        setResponse(json);
+        setIsLoading(false);
+      })
       .catch((error) => {
         console.log(error);
-        setTodoData(null);
+        setResponse(null);
+        setIsLoading(false);
       });
-  }, [count]);
+  };
+
+  const isError = response && "error" in response;
 
   return (
     <div>
-      <div>{count}</div>
-      <button onClick={() => setCount((prevCount) => prevCount + 1)}>
-        Increment
-      </button>
-      {todoData ? (
-        <div>
-          <p>Activity: {todoData.activity}</p>
-          <p>type: {todoData.type}</p>
-          <p>Participants: {todoData.participants}</p>
-          <p>Type: {todoData.type}</p>
-          <p>Address: {todoData.link ? todoData.link : "false"}</p>
-        </div>
-      ) : (
-        <p>no todo found</p>
-      )}
+      <label htmlFor="participants-input">Number of participants</label>
+      <input
+        id="participants-input"
+        value={numOfPeople}
+        type="number"
+        onChange={(event) => setNumOfPeople(parseInt(event.target.value))}
+      />
+      <button onClick={() => getActivityData()}>New Activity</button>
+      {isLoading && <span>Loading...</span>}
+      {response &&
+        (!isError ? (
+          <div>
+            <p>Activity: {response.activity}</p>
+            <p>type: {response.type}</p>
+            <p>Participants: {response.participants}</p>
+            <p>Address: {response.link ? response.link : "false"}</p>
+          </div>
+        ) : (
+          <p>error: {response.error}</p>
+        ))}
     </div>
   );
-}
+};
 
 export default App;
