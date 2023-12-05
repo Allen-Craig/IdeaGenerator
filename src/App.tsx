@@ -54,7 +54,7 @@ const App = () => {
             <p>Activity: {response.activity}</p>
             <p>type: {response.type}</p>
             <p>Participants: {response.participants}</p>
-            <p>Address: {response.link ? response.link : "false"}</p>
+            <p>Website: {response.link ? response.link : "Not Avialable"}</p>
           </div>
         ) : (
           <p>error: {response.error}</p>
